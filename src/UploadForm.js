@@ -61,7 +61,7 @@ const UploadForm = () => {
         {error && <div className="text-red-500 font-bold">{error}</div>}
       </form>
       {winner && <WinnerBanner winner={winner} />}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="flex justify-between items-center mt-8 mx-auto w-3/4">
         {players &&
           Object.entries(players).map(([key, player]) => (
             <PlayerCard key={key} player={player} />
