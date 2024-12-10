@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import PlayerCard from "./PlayerCard";
+import WinnerBanner from "./WinnerBanner";
 
 const UploadForm = () => {
   const [file, setFile] = useState(null);
-  const [summary, setSummary] = useState("");
+  const [players, setPlayers] = useState(null);
+  const [winner, setWinner] = useState(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -19,19 +22,19 @@ const UploadForm = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8000/upload", {
+      const response = await fetch("http://localhost:8000/upload/", {
         method: "POST",
         body: formData,
       });
-      console.log("Response:", response);
 
       if (!response.ok) {
         throw new Error("Failed to upload file");
       }
 
       const data = await response.json();
-      console.log("Data:", data);
-      setSummary(data.summary);
+      setPlayers(data.summary.players); // Update to match backend object structure
+      setWinner(data.summary.winner);
+
     } catch (error) {
       console.error("Error:", error);
       alert("An error occurred while uploading the file.");
@@ -39,45 +42,24 @@ const UploadForm = () => {
   };
 
   return (
-    <div>
-      <h1>Age of Analysis</h1>
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleFileChange} />
-        <button type="submit">Upload</button>
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">Age of Analysis</h1>
+      <form onSubmit={handleSubmit} className="mb-6">
+        <input type="file" onChange={handleFileChange} className="mb-4" />
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Upload
+        </button>
       </form>
-      {summary && (
-  <div>
-    <h2>Match Summary</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Key</th>
-          <th>Name</th>
-          <th>Civilization</th>
-          <th>Dark Age Villagers</th>
-          <th>EAPM</th>
-          <th>Feudal Research Time</th>
-          <th>Feudal Landing Time</th>
-          <th>Winner</th>
-        </tr>
-      </thead>
-      <tbody>
-        {Object.entries(summary).map(([key, player]) => (
-          <tr key={key}>
-            <td>{key}</td>
-            <td>{player.name}</td>
-            <td>{player.civ}</td>
-            <td>{player.dark_age_vils}</td>
-            <td>{player.eapm}</td>
-            <td>{player.feudal_research_time}</td>
-            <td>{player.feudal_landing_time}</td>
-            <td>{player.winner ? "Yes" : "No"}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+      {winner && <WinnerBanner winner={winner} />}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {players &&
+          Object.entries(players).map(([key, player]) => (
+            <PlayerCard key={key} player={player} />
+          ))}
+      </div>
     </div>
   );
 };
