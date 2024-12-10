@@ -4,17 +4,20 @@ import WinnerBanner from "./WinnerBanner";
 
 const UploadForm = () => {
   const [file, setFile] = useState(null);
+  const [error, setError] = useState("");
   const [players, setPlayers] = useState(null);
   const [winner, setWinner] = useState(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!file) {
-      alert("Please select a file first!");
+      setError("Please select a file to upload.");
       return;
     }
 
@@ -22,22 +25,25 @@ const UploadForm = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8000/upload/", {
+      const response = await fetch("http://localhost:8000/upload", {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to upload file");
+        const data = await response.json();
+        throw new Error(data.error || "Failed to upload file");
       }
 
       const data = await response.json();
+
       setPlayers(data.summary.players); // Update to match backend object structure
       setWinner(data.summary.winner);
+      setError("");
 
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred while uploading the file.");
+      setError(error.message || "An error occurred while processing the file.");
     }
   };
 
@@ -52,6 +58,7 @@ const UploadForm = () => {
         >
           Upload
         </button>
+        {error && <div className="text-red-500 font-bold">{error}</div>}
       </form>
       {winner && <WinnerBanner winner={winner} />}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
